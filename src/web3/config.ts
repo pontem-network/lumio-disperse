@@ -12,6 +12,8 @@ import disperseAbi from "./disperse-abi";
 
 export const walletConnectProjectId = "86283b367887dea6e0e54f10e387b246";
 
+export const SUPER_LUMIO_CHAIN_ID = 8866;
+
 export const chains = [
   defineChain({
     icon: ChainIcons.Ethereum,

@@ -166,7 +166,11 @@
 }
 
 .bg-gradient-to-r {
-  background: linear-gradient(90deg, #6366f1 0%, rgba(168 85 247 / 0.9) 100%);
+  background: linear-gradient(25deg,
+      #5b0e81,
+      #bc4c9b,
+      #df7f4f) !important;
+  color: aliceblue;
 }
 
 .text-gradient_indigo-purple {

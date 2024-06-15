@@ -1,6 +1,6 @@
 import React from "react";
 import { erc20Abi, extractChain, formatUnits, getChainContractAddress, parseUnits } from "viem";
-import { useAccount, useBalance, useReadContract, useWriteContract } from "wagmi";
+import { useAccount, useBalance, useReadContract, useSwitchChain, useWriteContract } from "wagmi";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -24,7 +24,7 @@ import { toast } from "sonner";
 import EthIcon from "@/assets/icons/eth.svg?react";
 import type { Address } from "viem";
 import disperseAbi from "./disperse-abi";
-import { chains, type ChainIds } from "./config";
+import { chains, type ChainIds, SUPER_LUMIO_CHAIN_ID } from "./config";
 import { siteConfig } from "@/config/site";
 import { NetworkSwitcher } from './network-switcher'
 
@@ -171,6 +171,7 @@ const shortenAddress = (address: string) => `${address.slice(0, 6)}...${address.
 
 export default function App() {
   const account = useAccount();
+  const { switchChainAsync } = useSwitchChain();
   const { open } = useWeb3Modal();
   const address = account.address
     ? shortenAddress(account.address)
@@ -271,6 +272,7 @@ export default function App() {
             </span>
           </a>
           <div className="flex items-center space-x-4">
+            {chainName !== 'SuperLumio' ? <Button rounded="full" className="bg-gradient-to-r" onClick={() => switchChainAsync({ chainId: SUPER_LUMIO_CHAIN_ID })}>Try Lumio</Button> : null}
             {account.status === "connected" ? <w3m-account-button /> : <w3m-connect-button />}
           </div>
         </div>
