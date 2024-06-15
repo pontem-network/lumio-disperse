@@ -272,7 +272,7 @@ export default function App() {
             </span>
           </a>
           <div className="flex items-center space-x-4">
-            {chainName !== 'SuperLumio' ? <Button rounded="full" className="bg-gradient-to-r" onClick={() => switchChainAsync({ chainId: SUPER_LUMIO_CHAIN_ID })}>Try Lumio</Button> : null}
+            {account.status === "connected" && chainName !== 'SuperLumio' ? <Button rounded="full" className="bg-gradient-to-r" onClick={() => switchChainAsync({ chainId: SUPER_LUMIO_CHAIN_ID })}>Try Lumio</Button> : null}
             {account.status === "connected" ? <w3m-account-button /> : <w3m-connect-button />}
           </div>
         </div>
