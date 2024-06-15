@@ -405,8 +405,8 @@ export default function App() {
                       {<span className="text-[13px] text-muted-foreground">
                         To spend {formatUnits(total, decimals)} {balance?.symbol} 
                       </span>}
-                      <Button variant="outline" type="button" onClick={() => refetchAllowance()}>
-                        Refetch
+                      <Button variant="outline" size="sm" className="text-xs p-0 h-min px-2" type="button" onClick={() => refetchAllowance()}>
+                        Refresh
                       </Button>
                       {(isApprovePending || isAllowanceLoading) ? <span className="text-[13px] text-muted-foreground">...</span> : null}
                     </div>
