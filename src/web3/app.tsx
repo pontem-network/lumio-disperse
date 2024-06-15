@@ -145,7 +145,7 @@ function parseInput(inputStrings: string[]): [Address, string][] {
     const parsedOutput: [Address, string][] = [];
 
     // Define a regular expression pattern to match the different formats
-    const pattern = /([0-9a-fA-Fx]+)[\s,=]?([\d\.]+)/g;
+    const pattern = /([0-9a-fA-Fx]+)[\s,=]+([\d\.]+)/g;
 
     // Iterate over each input string
     inputStrings.forEach((inputStr) => {
