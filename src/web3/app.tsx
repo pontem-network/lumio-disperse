@@ -366,6 +366,10 @@ export default function App() {
                         <span className="font-medium">Allowance</span>: {formattedAllowance} {balance?.symbol}{" "}
                         {allowance && allowance < total ? <span className="text-xs text-muted-foreground opacity-70">(not enough)</span> : null}
                         {allowance && allowance > 0 ? <Button type="button" variant="outline" size="sm" className="text-xs p-0 h-min px-2" onClick={() => approveAllowanceAsync(0n)}>Revoke</Button> : null}
+                        <Button variant="outline" size="sm" className="text-xs p-0 h-min px-2" type="button" onClick={() => refetchAllowance()}>
+                          Refresh
+                        </Button>
+                        {(isApprovePending || isAllowanceLoading) ? <span className="text-[13px] text-muted-foreground">...</span> : null}
                       </span>
                     </div>
                   )}
@@ -405,10 +409,6 @@ export default function App() {
                       {<span className="text-[13px] text-muted-foreground">
                         To spend {formatUnits(total, decimals)} {balance?.symbol} 
                       </span>}
-                      <Button variant="outline" size="sm" className="text-xs p-0 h-min px-2" type="button" onClick={() => refetchAllowance()}>
-                        Refresh
-                      </Button>
-                      {(isApprovePending || isAllowanceLoading) ? <span className="text-[13px] text-muted-foreground">...</span> : null}
                     </div>
                   )}
                 </>
