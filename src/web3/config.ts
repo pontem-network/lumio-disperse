@@ -1,15 +1,16 @@
 import { http, createConfig } from "wagmi";
 import { defineChain, type Address, extractChain, type HttpTransport } from "viem";
 import { mainnet, sepolia, polygon } from "wagmi/chains";
-import { coinbaseWallet, injected, walletConnect } from "wagmi/connectors";
+import { createWeb3Modal as w3mCreateWeb3Modal } from "@web3modal/wagmi/react";
+import { injected, walletConnect } from "wagmi/connectors";
 import * as ChainIcons from "@thirdweb-dev/chain-icons";
 import EthIcon from "@/assets/icons/eth.svg?react";
 import LumiIcon from "@/assets/icons/lumi.svg?react";
+import lumiIconPath from "@/assets/icons/lumi.svg";
 
 import disperseAbi from "./disperse-abi";
 
-export const walletConnectProjectId =
-  import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || "021bf63fb4357f9a3e62152e93cbeffb";
+export const walletConnectProjectId = "86283b367887dea6e0e54f10e387b246";
 
 export const chains = [
   defineChain({
@@ -45,12 +46,12 @@ export const chains = [
     },
     rpcUrls: {
       default: {
-        http: ["https://mainnet.lumio.io/"],
-        webSocket: ["wss://mainnet.lumio.io/"],
+        http: ["https://mainnet.lumio.io"],
+        webSocket: ["wss://mainnet.lumio.io"],
       },
     },
     blockExplorers: {
-      default: { name: "Explorer", url: "https://explorer.lumio.io/" },
+      default: { name: "Explorer", url: "https://explorer.lumio.io" },
     },
     options: {
       editable: true,
@@ -81,9 +82,21 @@ export const wagmiConfig = createConfig({
   connectors: [
     injected(),
     // coinbaseWallet({ appName: "Create Wagmi" }),
-    // walletConnect({ projectId: import.meta.env.VITE_WC_PROJECT_ID }),
+    walletConnect({ projectId: walletConnectProjectId }),
   ],
   transports,
+});
+
+export const createWeb3Modal = () => w3mCreateWeb3Modal({
+  wagmiConfig, 
+  projectId: walletConnectProjectId,
+  allowUnsupportedChain: true,
+  chainImages: {
+    8866: lumiIconPath.src,
+  },
+  themeVariables: {
+    '--w3m-accent': '#BF349C' // mix of #F03F77 and #8D29C1
+  }
 });
 
 declare module "wagmi" {

@@ -164,7 +164,7 @@ export default function App() {
     ? shortenAddress(account.address)
     : "";
   const accountText = address ? `Account (${address})` : "Account";
-  const chainName = account.chain?.name ? account.chain.name : "Unknown";
+  const chainName = account.chain?.name ? account.chain.name : "";
 
   const disperceAddress = account.chain?.contracts.disperse?.address;
 
@@ -250,11 +250,7 @@ export default function App() {
             </span>
           </a>
           <div className="flex items-center space-x-4">
-            <NetworkSwitcher/>
-            <Button size="sm" rounded="full" className="gap-2 border-2 border-primary" onClick={() => open()}>
-              {account.status === "connected" ? accountText : "Connect"}
-              {/* <Blockies seed={account.address} size={8} scale={4} className="rounded-full" /> */}
-            </Button>
+            {account.status === "connected" ? <w3m-account-button /> : <w3m-connect-button />}
           </div>
         </div>
       </header>

@@ -1,10 +1,9 @@
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider, type Persister } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
-import { createWeb3Modal } from "@web3modal/wagmi/react";
 import { WagmiProvider, serialize, deserialize } from "wagmi";
 
-import { wagmiConfig, walletConnectProjectId } from "./config";
+import { wagmiConfig, walletConnectProjectId, createWeb3Modal } from "./config";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +19,7 @@ const queyPersister = createSyncStoragePersister({
   deserialize,
 });
 
-createWeb3Modal({ wagmiConfig, projectId: walletConnectProjectId });
+createWeb3Modal();
 
 interface Web3ProviderProps {
   children: React.ReactNode;
