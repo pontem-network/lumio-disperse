@@ -54,6 +54,8 @@ const useApproveAllowance = ({
   spenderAddress,
   sellTokenAddress,
 }: useApproveAllowanceProps) => {
+  const account = useAccount();
+  const chain = account.chain;
   // 1. Read from erc20, does spender (0x Exchange Proxy) have allowance?
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: sellTokenAddress,
@@ -73,8 +75,12 @@ const useApproveAllowance = ({
       args: [spenderAddress, maxAllowance],
     });
     console.log('approveAsync tx', tx);
-    toast.success("Approve successful. <a href='https://etherscan.io/tx/" + tx + "' target='_blank'>View on Etherscan</a>");
+    toast.success("Approve successful. <a href='" + chain?.blockExplorers.default.url + "/tx/" + tx + "' target='_blank'>View on " + chain?.blockExplorers.default.name + "</a>");
     await refetchAllowance();
+    setTimeout(() => {
+      console.log('refetchAllowance');
+      refetchAllowance();
+    }, 100);
   };
 
   return {
@@ -165,6 +171,7 @@ export default function App() {
     : "";
   const accountText = address ? `Account (${address})` : "Account";
   const chainName = account.chain?.name ? account.chain.name : "";
+  const tokens = account.chain?.tokens;
 
   const disperceAddress = account.chain?.contracts.disperse?.address;
 
@@ -200,6 +207,8 @@ export default function App() {
 
   const decimals = balance?.decimals ?? 18;
   const formattedBalance = balance?.value ? formatUnits(balance?.value, balance.decimals) : "0";
+  const significantBalance = Number(formattedBalance).toPrecision(2);
+
   // TODO: calc sum of transfers
   const maxAllowance = balance?.value ? balance?.value : undefined;
   const formattedMaxAllowance = maxAllowance
@@ -229,6 +238,8 @@ export default function App() {
     spenderAddress: disperceAddress,
     sellTokenAddress: token,
   });
+  const formattedAllowance = allowance ? formatUnits(allowance, decimals) : "0";
+  const canDisperse = allowance && allowance >= total;
 
 
   const formSubmit = form.handleSubmit((data) => {
@@ -276,61 +287,84 @@ export default function App() {
           <Form {...form}>
             <form onSubmit={formSubmit} className="space-y-6">
               {/* TODO: use FormField here */}
-              <Tabs
-                className="mb-6"
-                defaultValue="native"
-                onValueChange={(value) => form.setValue("type", value)}
-              >
-                <TabsList>
-                  <TabsTrigger value="native">Native</TabsTrigger>
-                  <TabsTrigger value="erc20">ERC20</TabsTrigger>
-                </TabsList>
-              </Tabs>
-              {type === "native" && (
-                <div className="text-[13px]">
-                  <span>
-                    Balance: {balance?.value ? formattedBalance : "0"} {balance?.symbol}
-                  </span>
-                </div>
-              )}
-              {type === "erc20" && (
-                <FormField
-                  control={form.control}
-                  name="token"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel htmlFor="token">Token Address</FormLabel>
-                      <FormControl>
-                        <Input id="token" autoComplete="off" placeholder="0x..." {...field} />
-                      </FormControl>
-                      <FormDescription className="text-[13px] flex justify-between">
-                        <i
-                          className="cursor-pointer hover:text-primary"
-                          onClick={() =>
-                            form.setValue("token", "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359")
-                          }
-                        >
-                          USDC: 0x3c499c...3359 (Polygon)
-                        </i>
-                        <span>
-                          <span className="whitespace-nowrap">
-                            Balance: {balance?.value ? formattedBalance : "0"} {balance?.symbol}
-                          </span>, 
-                          <span className="whitespace-nowrap">Allowance: {allowance ? formatUnits(allowance, balance?.decimals ?? 0) : "0"} {balance?.symbol}
-                          </span>
-                        </span>
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
+              <div className="flex gap-4 items-start">
+                <Tabs
+                  className=""
+                  defaultValue="native"
+                  onValueChange={(value) => form.setValue("type", value)}
+                >
+                  <TabsList>
+                    <TabsTrigger value="native">Native</TabsTrigger>
+                    <TabsTrigger value="erc20">ERC20</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            
+                
+                {type === "erc20" && (
+                  <FormField
+                    control={form.control}
+                    name="token"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabel htmlFor="token">Token address</FormLabel>
+                      {/* <FormItem className="w-full flex items-center gap-2 space-y-0"> */}
+                        {/* <span className="text-sm text-muted-foreground">Token</span> */}
+                        <FormControl>
+                          <Input id="token" autoComplete="off" placeholder="0x..." {...field} />
+                        </FormControl>
+                        <FormDescription className="text-xs">
+                          <i
+                            className="cursor-pointer hover:text-primary"
+                            onClick={() =>
+                              form.setValue("token", tokens?.USDC?.address!)
+                            }
+                          >
+                            USDC: {shortenAddress(tokens?.USDC?.address!)}
+                          </i>,{" "}
+                          <i
+                            className="cursor-pointer hover:text-primary"
+                            onClick={() =>
+                              form.setValue("token", tokens?.USDT?.address!)
+                            }
+                          >
+                            USDT: {shortenAddress(tokens?.USDT?.address!)}
+                          </i>
+                          {" "}
+                          <i className="text-xs text-muted-foreground opacity-70">
+                            (click to select)
+                          </i>
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+              <div className="text-sm leading-none">
+                  {type === "native" && (
+                    balance?.value ? <span><span className="font-medium">Balance</span>: {significantBalance} {balance?.symbol}</span> : null
                   )}
-                />
-              )}
+                  {type === "erc20" && (
+                    <div className="flex flex-col gap-2">
+                      <span className="whitespace-nowrap">
+                        <span className="font-medium">Balance</span>: {balance?.value ? significantBalance : "0"}{balance?.symbol ? " " + balance?.symbol : ""}
+                      </span>
+                      <span className="whitespace-nowrap flex gap-2 items-center"> 
+                        <span className="font-medium">Allowance</span>: {formattedAllowance} {balance?.symbol}{" "}
+                        {allowance && allowance < total ? <span className="text-xs text-muted-foreground opacity-70">(not enough)</span> : null}
+                        {allowance && allowance > 0 ? <Button type="button" variant="outline" size="sm" className="text-xs p-0 h-min px-2" onClick={() => approveAllowanceAsync(0n)}>Revoke</Button> : null}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
               <FormField
                 control={form.control}
                 name="recipients"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Addresses and Balances</FormLabel>
+                    <FormLabel>Recipients</FormLabel>
                     <FormControl>
                       <Textarea placeholder={`0x123... 1.0\n0x456..., 2.0\n0x789...=3.0`} {...field} />
                     </FormControl>
@@ -340,25 +374,19 @@ export default function App() {
               />
               {type === "erc20" && (
                 <>
-                  {allowance ? (
+                  {canDisperse ? (
                     <div className="flex gap-2 items-center">
                       <Button type="submit" onClick={() => disperseTokenAsync()}>Disperse</Button>
                       <span className="text-[13px] text-muted-foreground">
                         Total: {formattedTotal} {balance?.symbol}
                       </span>
-                      <Button type="button" onClick={() => approveAllowanceAsync(0n)}>
-                        Revoke
-                      </Button>
-                      <span className="text-[13px] text-muted-foreground">
-                        Allowance: {formatUnits(allowance, decimals)} {balance?.symbol}
-                      </span>
                     </div>
                   ) : (
                     <div className="flex gap-2 items-center">
-                      <Button type="submit" disabled>Disperse</Button>
+                      {/* <Button type="submit" disabled>Disperse</Button>
                       <span className="text-[13px] text-muted-foreground">
                         Total: {formattedTotal} {balance?.symbol}
-                      </span>
+                      </span> */}
                       <Button type="button" onClick={() => approveAllowanceAsync(total)}>
                         Approve
                       </Button>

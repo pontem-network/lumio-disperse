@@ -125,6 +125,27 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
+
+  .background-container {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .background-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0)),
+                url('/bg.png') no-repeat bottom center;
+    background-size: cover;
+    filter: blur(10px); /* Устанавливает степень размытия */
+    z-index: -1; /* Помещает псевдоэлемент за контент */
+  }
+
   /* Documentation part */
   .docs-grid-cols-2 {
     @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-4;

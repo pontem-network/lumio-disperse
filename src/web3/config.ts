@@ -23,6 +23,16 @@ export const chains = [
         abi: disperseAbi,
       },
     },
+    tokens: {
+      USDT: {
+        address: "0xdac17f958d2ee523a2206206994597c13d831ec7",
+        decimals: 6,
+      },
+      USDC: {
+        address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        decimals: 6,
+      },
+    },
   }),
   defineChain({
     icon: ChainIcons.Polygon,
@@ -32,6 +42,16 @@ export const chains = [
       disperse: {
         address: "0xD152f549545093347A162Dce210e7293f1452150" as Address,
         abi: disperseAbi,
+      },
+    },
+    tokens: {
+      USDT: {
+        address: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
+        decimals: 6,
+      },
+      USDC: {
+        address: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+        decimals: 6,
       },
     },
   }),
@@ -62,6 +82,16 @@ export const chains = [
       disperse: {
         address: "0x77659f2C1cbe91B9161880d4329521E5485C1eA3" as Address,
         abi: disperseAbi,
+      },
+    },
+    tokens: {
+      USDT: {
+        address: "0xA5fB245fb37663F3C97F3000A4eEB6497AB6e3dd",
+        decimals: 6,
+      },
+      USDC: {
+        address: "0x1C93569537a52c144b6B24640F72d74b6c1B0f3C",
+        decimals: 6,
       },
     },
   }),
