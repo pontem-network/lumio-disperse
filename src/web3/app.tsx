@@ -56,16 +56,23 @@ const useApproveAllowance = ({
 }: useApproveAllowanceProps) => {
   const account = useAccount();
   const chain = account.chain;
+
   // 1. Read from erc20, does spender (0x Exchange Proxy) have allowance?
-  const { data: allowance, refetch: refetchAllowance } = useReadContract({
+  const { data: allowance, refetch: refetchAllowance, isLoading: isAllowanceLoading } = useReadContract({
     address: sellTokenAddress,
     abi: erc20Abi,
     functionName: "allowance",
     args: !!accountAddress && !!spenderAddress ? [accountAddress, spenderAddress] : undefined,
   });
 
+  React.useEffect(() => {
+    if (allowance === undefined) refetchAllowance();
+    const timer = setInterval(() => refetchAllowance(), 500);
+    return () => clearInterval(timer);
+  }, [allowance, refetchAllowance]);
+
   // 2. (only if no allowance): write to erc20, approve 0x Exchange Proxy to spend max integer
-  const {  isPending: isApprovePending, data: allowanceApproveResult, writeContractAsync, error } = useWriteContract();
+  const { isPending: isApprovePending, data: allowanceApproveResult, writeContractAsync, error } = useWriteContract();
   const approveAsync = async (maxAllowance: bigint = MAX_ALLOWANCE) => {
     if (!spenderAddress) return;
     const tx = await writeContractAsync({
@@ -75,16 +82,13 @@ const useApproveAllowance = ({
       args: [spenderAddress, maxAllowance],
     });
     console.log('approveAsync tx', tx);
+    refetchAllowance();
     toast.success("Approve successful. <a href='" + chain?.blockExplorers.default.url + "/tx/" + tx + "' target='_blank'>View on " + chain?.blockExplorers.default.name + "</a>");
-    await refetchAllowance();
-    setTimeout(() => {
-      console.log('refetchAllowance');
-      refetchAllowance();
-    }, 100);
   };
 
   return {
     allowance,
+    isAllowanceLoading,
     isApprovePending,
     approveAllowanceAsync: approveAsync,
     refetchAllowance,
@@ -99,6 +103,8 @@ interface UseDisperseProps {
 }
 
 const useDisperse = ({ address, token, recipients, values }: UseDisperseProps) => {
+  const account = useAccount();
+  const chain = account.chain;
   const { data: disperseResult, writeContractAsync, error: disperseError } = useWriteContract();
 
   const disperseTokenAsync = async () => {
@@ -110,7 +116,7 @@ const useDisperse = ({ address, token, recipients, values }: UseDisperseProps) =
       args: [token, recipients, values],
     });
     console.log('disperseTokenAsync tx', tx);
-    toast.success("Disperse successful. <a href='https://etherscan.io/tx/" + tx + "' target='_blank'>View on Etherscan</a>");
+    toast.success("Disperse successful. <a href='" + chain?.blockExplorers.default.url + "/tx/" + tx + "' target='_blank'>View on " + chain?.blockExplorers.default.name + "</a>");
   };
 
   const disperseEtherAsync = async () => {  
@@ -123,7 +129,7 @@ const useDisperse = ({ address, token, recipients, values }: UseDisperseProps) =
       value: values.reduce((a, b): bigint => a + b, 0n)
     })
     console.log('disperseEtherAsync tx', tx);
-    toast.success("Disperse successful. <a href='https://etherscan.io/tx/" + tx + "' target='_blank'>View on Etherscan</a>");
+    toast.success("Disperse successful. <a href='" + chain?.blockExplorers.default.url + "/tx/" + tx + "' target='_blank'>View on " + chain?.blockExplorers.default.name + "</a>");
   };
 
   return {
@@ -226,6 +232,14 @@ export default function App() {
   const total = values.reduce((acc, val) => acc + val, 0n);
   const formattedTotal = total ? formatUnits(total, decimals) : "0";
   
+  const { allowance, isApprovePending, approveAllowanceAsync, refetchAllowance, isAllowanceLoading } = useApproveAllowance({
+    accountAddress: account.address,
+    spenderAddress: disperceAddress,
+    sellTokenAddress: token,
+  });
+
+  console.log('isAllowanceLoading', isAllowanceLoading)
+
   const { disperseResult, disperseEtherAsync, disperseTokenAsync } = useDisperse({ 
     address: disperceAddress!, 
     token, 
@@ -233,14 +247,10 @@ export default function App() {
     values,
   });
 
-  const { allowance, isApprovePending, approveAllowanceAsync } = useApproveAllowance({
-    accountAddress: account.address,
-    spenderAddress: disperceAddress,
-    sellTokenAddress: token,
-  });
   const formattedAllowance = allowance ? formatUnits(allowance, decimals) : "0";
   const canDisperse = allowance && allowance >= total;
 
+  console.log('allowance', allowance)
 
   const formSubmit = form.handleSubmit((data) => {
     // TODO: Handle form submission
@@ -376,7 +386,7 @@ export default function App() {
                 <>
                   {canDisperse ? (
                     <div className="flex gap-2 items-center">
-                      <Button type="submit" onClick={() => disperseTokenAsync()}>Disperse</Button>
+                      <Button type="submit" onClick={() => disperseTokenAsync()} disabled={isApprovePending || isAllowanceLoading || !token || allowance === undefined}>Disperse</Button>
                       <span className="text-[13px] text-muted-foreground">
                         Total: {formattedTotal} {balance?.symbol}
                       </span>
@@ -387,12 +397,16 @@ export default function App() {
                       <span className="text-[13px] text-muted-foreground">
                         Total: {formattedTotal} {balance?.symbol}
                       </span> */}
-                      <Button type="button" onClick={() => approveAllowanceAsync(total)}>
+                      <Button type="button" onClick={() => approveAllowanceAsync(total)} disabled={isApprovePending || isAllowanceLoading || !token || allowance === undefined}>
                         Approve
                       </Button>
-                      <span className="text-[13px] text-muted-foreground">
+                      {<span className="text-[13px] text-muted-foreground">
                         To spend {formatUnits(total, decimals)} {balance?.symbol} 
-                      </span>
+                      </span>}
+                      <Button variant="outline" type="button" onClick={() => refetchAllowance()}>
+                        Refetch
+                      </Button>
+                      {(isApprovePending || isAllowanceLoading) ? <span className="text-[13px] text-muted-foreground">...</span> : null}
                     </div>
                   )}
                 </>
