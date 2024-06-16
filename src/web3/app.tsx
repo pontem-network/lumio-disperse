@@ -167,7 +167,7 @@ function parseInput(inputStrings: string[]): [Address, string][] {
     return parsedOutput;
 }
 
-const shortenAddress = (address: string) => `${address.slice(0, 6)}...${address.slice(-4)}`;
+const shortenAddress = (address: string) => address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 
 export default function App() {
   const account = useAccount();
