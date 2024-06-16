@@ -239,8 +239,6 @@ export default function App() {
     sellTokenAddress: token,
   });
 
-  console.log('isAllowanceLoading', isAllowanceLoading)
-
   const { disperseResult, disperseEtherAsync, disperseTokenAsync } = useDisperse({ 
     address: disperceAddress!, 
     token, 
@@ -250,8 +248,6 @@ export default function App() {
 
   const formattedAllowance = allowance ? formatUnits(allowance, decimals) : "0";
   const canDisperse = allowance && allowance >= total;
-
-  console.log('allowance', allowance)
 
   const formSubmit = form.handleSubmit((data) => {
     // TODO: Handle form submission
