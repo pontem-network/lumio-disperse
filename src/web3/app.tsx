@@ -83,7 +83,7 @@ const useApproveAllowance = ({
     });
     console.log('approveAsync tx', tx);
     refetchAllowance();
-    toast.success("Approve successful. <a href='" + chain?.blockExplorers.default.url + "/tx/" + tx + "' target='_blank'>View on " + chain?.blockExplorers.default.name + "</a>");
+    toast.success(<>Approve successful. <a href={chain?.blockExplorers.default.url + "/tx/" + tx} target="_blank">View on {chain?.blockExplorers.default.name}</a></>);
   };
 
   return {
@@ -116,7 +116,7 @@ const useDisperse = ({ address, token, recipients, values }: UseDisperseProps) =
       args: [token, recipients, values],
     });
     console.log('disperseTokenAsync tx', tx);
-    toast.success("Disperse successful. <a href='" + chain?.blockExplorers.default.url + "/tx/" + tx + "' target='_blank'>View on " + chain?.blockExplorers.default.name + "</a>");
+    toast.success(<>Disperse successful. <a href={chain?.blockExplorers.default.url + "/tx/" + tx} target="_blank">View on {chain?.blockExplorers.default.name}</a></>);
   };
 
   const disperseEtherAsync = async () => {  
@@ -129,7 +129,7 @@ const useDisperse = ({ address, token, recipients, values }: UseDisperseProps) =
       value: values.reduce((a, b): bigint => a + b, 0n)
     })
     console.log('disperseEtherAsync tx', tx);
-    toast.success("Disperse successful. <a href='" + chain?.blockExplorers.default.url + "/tx/" + tx + "' target='_blank'>View on " + chain?.blockExplorers.default.name + "</a>");
+    toast.success(<>Disperse successful. <a href={chain?.blockExplorers.default.url + "/tx/" + tx} target="_blank">View on {chain?.blockExplorers.default.name}</a></>);
   };
 
   return {
