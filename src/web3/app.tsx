@@ -260,6 +260,7 @@ export default function App() {
     return false;
   });
 
+  const isConnected = account.status === "connected";
 
   return (
     <>
@@ -388,7 +389,7 @@ export default function App() {
                   </FormItem>
                 )}
               />
-              {type === "erc20" && (
+              {isConnected && type === "erc20" && (
                 <>
                   {canDisperse ? (
                     <div className="flex gap-2 items-center">
@@ -413,12 +414,17 @@ export default function App() {
                   )}
                 </>
               )}
-              {type === "native" && (
+              {isConnected && type === "native" && (
                 <div className="flex gap-2 items-center">
                   <Button type="submit" onClick={() => disperseEtherAsync()}>Disperse</Button>
                   <span className="text-[13px] text-muted-foreground">
                     Total: {formattedTotal} {balance?.symbol}
                   </span>
+                </div>
+              )}
+              {!isConnected && (
+                <div className="flex gap-2 items-center">
+                  <Button type="submit" onClick={() => open()}>Connect Wallet</Button>
                 </div>
               )}
             </form>
