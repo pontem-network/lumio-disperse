@@ -266,9 +266,9 @@ export default function App() {
     <>
       <header className="sticky top-0 z-40 border-b bg-background">
         <div className="container flex h-16 items-center justify-between py-4">
-          <a href="/" className="hidden items-center space-x-2 md:flex">
+          <a href="/" className="items-center space-x-2 flex">
             <EthIcon className="w-[32px] text-sm font-normal" />
-            <span className="hidden font-bold sm:inline-block">
+            <span className="font-bold sm:inline-block">
               {siteConfig.name}
             </span>
           </a>
