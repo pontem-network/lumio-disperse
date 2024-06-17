@@ -66,10 +66,9 @@ const useApproveAllowance = ({
   });
 
   React.useEffect(() => {
-    if (allowance === undefined) refetchAllowance();
     const timer = setInterval(() => refetchAllowance(), 500);
     return () => clearInterval(timer);
-  }, [allowance, refetchAllowance]);
+  }, []);
 
   // 2. (only if no allowance): write to erc20, approve 0x Exchange Proxy to spend max integer
   const { isPending: isApprovePending, data: allowanceApproveResult, writeContractAsync, error } = useWriteContract();
@@ -117,6 +116,7 @@ const useDisperse = ({ address, token, recipients, values, onDisperse = (tx) => 
       args: [token, recipients, values],
     });
     console.log('disperseTokenAsync tx', tx);
+    onDisperse(tx)
     toast.success(<>Disperse successful. <a href={chain?.blockExplorers.default.url + "/tx/" + tx} target="_blank">View on {chain?.blockExplorers.default.name}</a></>);
   };
 
@@ -210,6 +210,11 @@ export default function App() {
   });
 
   React.useEffect(() => {
+    const timer = setInterval(() => refechBalance(), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  React.useEffect(() => {
     if (balanceError?.message) {
       toast.error('Error getting balance for: ' + shortenAddress((balanceError as any)?.contractAddress))
     }
@@ -247,8 +252,8 @@ export default function App() {
     recipients, 
     values,
     onDisperse(tx) {
+      console.log('disperse onDisperse', tx)
       refechBalance();
-      setTimeout(() => refechBalance(), 1000);
     },
   });
 
