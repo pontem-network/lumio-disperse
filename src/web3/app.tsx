@@ -26,7 +26,7 @@ import type { Address } from "viem";
 import disperseAbi from "./disperse-abi";
 import { chains, type ChainIds, SUPER_LUMIO_CHAIN_ID } from "./config";
 import { siteConfig } from "@/config/site";
-import { NetworkSwitcher } from './network-switcher'
+import { formatBalance } from "./format-balance"
 
 const formSchema = z.object({
   type: z.enum(["native", "erc20"]),
@@ -100,9 +100,10 @@ interface UseDisperseProps {
   token: Address;
   recipients: Address[];
   values: bigint[];
+  onDisperse?: (tx: string) => void;
 }
 
-const useDisperse = ({ address, token, recipients, values }: UseDisperseProps) => {
+const useDisperse = ({ address, token, recipients, values, onDisperse = (tx) => {}}: UseDisperseProps) => {
   const account = useAccount();
   const chain = account.chain;
   const { data: disperseResult, writeContractAsync, error: disperseError } = useWriteContract();
@@ -129,6 +130,7 @@ const useDisperse = ({ address, token, recipients, values }: UseDisperseProps) =
       value: values.reduce((a, b): bigint => a + b, 0n)
     })
     console.log('disperseEtherAsync tx', tx);
+    onDisperse(tx)
     toast.success(<>Disperse successful. <a href={chain?.blockExplorers.default.url + "/tx/" + tx} target="_blank">View on {chain?.blockExplorers.default.name}</a></>);
   };
 
@@ -201,6 +203,7 @@ export default function App() {
     isError,
     isLoading,
     error: balanceError,
+    refetch: refechBalance
   } = useBalance({
     address: account.address,
     token: type === "erc20" && token ? (token as Address) : undefined,
@@ -213,8 +216,7 @@ export default function App() {
   }, [balanceError])
 
   const decimals = balance?.decimals ?? 18;
-  const formattedBalance = balance?.value ? formatUnits(balance?.value, balance.decimals) : "0";
-  const significantBalance = Number(formattedBalance).toPrecision(2);
+  const formattedBalance = balance?.value ? formatBalance(balance?.value, balance.decimals) : "0";
 
   // TODO: calc sum of transfers
   const maxAllowance = balance?.value ? balance?.value : undefined;
@@ -231,7 +233,7 @@ export default function App() {
   });
 
   const total = values.reduce((acc, val) => acc + val, 0n);
-  const formattedTotal = total ? formatUnits(total, decimals) : "0";
+  const formattedTotal = total ? formatBalance(total, decimals) : "0";
   
   const { allowance, isApprovePending, approveAllowanceAsync, refetchAllowance, isAllowanceLoading } = useApproveAllowance({
     accountAddress: account.address,
@@ -239,14 +241,18 @@ export default function App() {
     sellTokenAddress: token,
   });
 
-  const { disperseResult, disperseEtherAsync, disperseTokenAsync } = useDisperse({ 
+  const { disperseResult, disperseEtherAsync, disperseTokenAsync } = useDisperse({
     address: disperceAddress!, 
     token, 
     recipients, 
     values,
+    onDisperse(tx) {
+      refechBalance();
+      setTimeout(() => refechBalance(), 1000);
+    },
   });
 
-  const formattedAllowance = allowance ? formatUnits(allowance, decimals) : "0";
+  const formattedAllowance = allowance ? formatBalance(allowance, decimals) : "0";
   const canDisperse = allowance && allowance >= total;
 
   const formSubmit = form.handleSubmit((data) => {
@@ -352,12 +358,12 @@ export default function App() {
 
               <div className="text-sm leading-none">
                   {type === "native" && (
-                    balance?.value ? <span><span className="font-medium">Balance</span>: {significantBalance} {balance?.symbol}</span> : null
+                    balance?.value ? <span><span className="font-medium">Balance</span>: {formattedBalance} {balance?.symbol}</span> : null
                   )}
                   {type === "erc20" && (
                     <div className="flex flex-col gap-2">
                       <span className="whitespace-nowrap">
-                        <span className="font-medium">Balance</span>: {balance?.value ? significantBalance : "0"}{balance?.symbol ? " " + balance?.symbol : ""}
+                        <span className="font-medium">Balance</span>: {balance?.value ? formattedBalance : "0"}{balance?.symbol ? " " + balance?.symbol : ""}
                       </span>
                       <span className="whitespace-nowrap flex gap-2 items-center"> 
                         <span className="font-medium">Allowance</span>: {formattedAllowance} {balance?.symbol}{" "}
